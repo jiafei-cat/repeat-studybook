@@ -55,5 +55,3 @@ function inorderTraversal(root) {
     p = p.right
   }
 }
-
-function 
