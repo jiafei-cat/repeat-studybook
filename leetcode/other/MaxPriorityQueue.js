@@ -3,7 +3,6 @@ class MaxPriorityQueue {
   constructor() {
     this.heap = []
   }
-
   peak() {
     if (!this.size()) return
     return this.heap[0]
