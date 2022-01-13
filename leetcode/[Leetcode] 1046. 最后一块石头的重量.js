@@ -12,4 +12,15 @@ var lastStoneWeight = function(stones) {
   return arr[0]
 }
 
-// 
+// 利用优先队列
+var lastStoneWeight = function(stones) {
+  const maxHeap = new MaxPriorityQueue()
+  stones.map(i => maxHeap.push(i))
+
+  while(maxHeap.size() > 1) {
+    let fist = maxHeap.pop() || 0
+    let second = maxHeap.pop() || 0
+    maxHeap.push(Math.abs(fist - second))
+  }
+  return maxHeap.peak()
+}
