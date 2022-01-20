@@ -9,5 +9,6 @@ describe('模拟apply的实现', () => {
     }
 
     expect(f.myApply(obj, [1, 2])).toEqual({ context: { a: 1 }, args: [1, 2] })
+    expect(f.fn).toBeUndefined()
   })
 })

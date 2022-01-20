@@ -12,5 +12,6 @@ describe('模拟bind实现', () => {
       context: { a: 1 },
       args: [1, 2, 3, 4],
     })
+    expect(f.fn).toBeUndefined()
   })
 })
