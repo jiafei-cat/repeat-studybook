@@ -1,6 +1,7 @@
 // =================================
 // 获取微信消息 - 函数重载
 // =================================
+console.log('函数重载 ==================== start')
 type MessageType = "image" | "audio" | string // 微信消息类型
 // 对象类型
 type Message = {
@@ -118,3 +119,6 @@ let a2:number = a1
 // any可以赋给任意子类
 let a3:any = 1
 let a4:number = a3
+
+
+console.log('函数重载 ==================== end')
