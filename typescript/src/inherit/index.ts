@@ -102,5 +102,4 @@ var Car = (function (_super) {
 var car = new Car("普拉多", "京3A556", 3, 100000, "凯美瑞旗舰版")
 console.log("car:", car)
 console.log(car.calculateRent())
-
 console.log('原型继承 ==================== end')
