@@ -20,4 +20,32 @@ function showArr(arr: readonly any[]) {//类型“readonly any[]”中的索引�
 
 showArr(arr)
 
+
+function showArr2(arr: ReadonlyArray<any>) { // 使用内置ReadonlyArray
+  console.log(arr)
+}
+
+showArr2(arr)
+
+type MyReadonly<T> = {
+  readonly [P in keyof T]: T[P]
+}
+function showArr3(arr: MyReadonly<any>) { // 使用自己写的readonly类型工具
+  console.log(arr)
+}
+
+showArr3(arr)
+
+// tips-2: 拓展window变量
+// console.log(window.a) 报错，提示window不存在a
+
+// 拓展全局的Window,增加a属性
+declare global {
+  interface Window {
+    a: '1'
+  }
+}
+
+console.log(window.a)
+
 export {}
