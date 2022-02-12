@@ -42,4 +42,17 @@ type MyOmit2<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
 
 type Test2 = Omit<Todo, 'description'>
 
+// returnType
+type MyReturnType<T extends (...args: any[]) => any> = T extends (...args: any) => infer P ? P : any
+
+type ComplexObject = {
+  a: [12, 'foo']
+  bar: 'hello'
+  prev(): number
+}
+
+const fn = (v: boolean) => v ? 1 : 2
+const fn1 = (v: boolean, w: any) => v ? 1 : 2
+type Test3 = MyReturnType<() => string>
+
 export {}
