@@ -1,3 +1,4 @@
+// 实现TS自带工具类型
 // ==================================
 // interface
 // ==================================
@@ -85,6 +86,38 @@ interface Menu {
 
 type MyRecordTest = MyRecord<MenuKey, Menu> 
 
+{
+  // Equal history
+  // any/never/特殊union通不过
+  type EqualV1<S, T> = S extends T ? T extends S ? true : false : false
+  type testV1_1 = EqualV1<never, number> // result => never
+  type testV1_11 = EqualV1<any, never> // result => never
+  type testV1_2 = EqualV1<any, string> // result => boolean, any类型特殊处理，会处理成trueType和falseType得到 true | false, 交叉得boolean
+  type testV1_3 = EqualV1<1 | number & {}, number> // result => boolean, 分配判断得到 false ｜ true, 交叉得boolean
+
+  // 不让其distributive, 可以解决never和特殊union问题
+  // 还是无法解决any
+  type EqualV2<S, T> = [S] extends [T] ? [T] extends [S] ? true : false : false
+  type testV2_1 = EqualV2<1 | number & {}, number> // result => true
+  type testV2_2 = EqualV2<never, never> // result => true
+  type testV2_3 = EqualV2<any, number> // result => true
+
+  // 增加any判断
+  type IsAny<T> = 0 extends (1 & T) ? true : false // 利用any与任何类型的交集都是any的特性
+
+  type EqualV3<S, T> = IsAny<S> extends true
+    ? IsAny<T> extends true
+      ? true
+      : false
+    : IsAny<T> extends true
+    ? false
+    : [S] extends [T]
+    ? [T] extends [S]
+      ? true
+      : false
+    : false
+  type testV3_1 = EqualV3<1 | number & {}, number> // result 
+}
 // ==================================
 // function
 // ==================================
