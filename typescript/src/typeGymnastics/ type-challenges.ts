@@ -145,3 +145,24 @@
   type test2 = MyParameters<typeof bar>
   type test3 = MyParameters<typeof baz>
 }
+
+// 2・获取函数返回类型
+{
+  type MyReturnType<T extends (...args:any[]) => any> = T extends (...args: any[]) => infer P ? P : never
+
+  type test1 = MyReturnType<() => string>
+  type test2 = MyReturnType<() => 123>
+  type test3 = MyReturnType<() => ComplexObject>
+  type test4 = MyReturnType<() => Promise<boolean>>
+  type test5 = MyReturnType<() => () => 'foo'>
+  type test6 = MyReturnType<typeof fn>
+  type test7 = MyReturnType<typeof fn1>
+
+  type ComplexObject = {
+    a: [12, 'foo']
+    bar: 'hello'
+    prev(): number
+  }
+  const fn = (v: boolean) => v ? 1 : 2
+  const fn1 = (v: boolean, w: any) => v ? 1 : 2
+}
