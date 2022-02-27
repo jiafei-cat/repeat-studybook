@@ -166,3 +166,61 @@
   const fn = (v: boolean) => v ? 1 : 2
   const fn1 = (v: boolean, w: any) => v ? 1 : 2
 }
+
+//  3・实现 Omit 
+{
+  type MyPick<T, K extends keyof T> = {
+    [P in K]: T[P]
+  }
+  type MyExclude<T, K> = T extends K ? never : T
+  type MyOmit<T, K> = MyPick<T, MyExclude<keyof T, K>>
+  interface Todo {
+    title: string
+    description: string
+    completed: boolean
+  }
+  
+  interface Expected1 {
+    title: string
+    completed: boolean
+  }
+  
+  interface Expected2 {
+    title: string
+  }
+
+  type test1 = MyOmit<Todo, 'description'>
+  type test2 = MyOmit<Todo, 'description' | 'completed'>
+  
+}
+
+//  8・Readonly 2
+{
+  type MyReadonly2<T, K extends keyof T = keyof T> = {
+    readonly [P in K]: T[P]
+  } & {
+    [P in Exclude<keyof T, K>]: T[P]
+  }
+
+  type test1 = MyReadonly2<Todo1>
+  type test2 = MyReadonly2<Todo1, 'title' | 'description'>
+  type test3 = MyReadonly2<Todo2, 'title' | 'description'>
+
+  interface Todo1 {
+    title: string
+    description?: string
+    completed: boolean
+  }
+  
+  interface Todo2 {
+    readonly title: string
+    description?: string
+    completed: boolean
+  }
+  
+  interface Expected {
+    readonly title: string
+    readonly description?: string
+    completed: boolean
+  }
+}
