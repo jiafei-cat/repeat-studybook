@@ -224,3 +224,43 @@
     completed: boolean
   }
 }
+
+// 9・深度 Readonly
+{
+  type DeepReadonly<T extends {}> = {
+    readonly [P in keyof T]: T[P] extends {[key: string]: unknown} ? DeepReadonly<T[P]> : T[P]
+  }
+
+  type X = {
+    a: () => 22
+    b: string
+    c: {
+      d: boolean
+      e: {
+        g: {
+          h: {
+            i: true
+            j: 'string'
+          }
+          k: 'hello'
+        }
+      }
+    }
+  }
+
+  type test1 = DeepReadonly<X>
+}
+
+// 10・元组转合集
+{
+  type TupleToUnion2<T extends any[]> = T[number]
+
+  type test1 = TupleToUnion2<[123, '456', true]>
+  type test2 = TupleToUnion2<[123]>
+  const a:test1 = 123
+}
+
+// 12・可串联构造器
+{
+  
+}
