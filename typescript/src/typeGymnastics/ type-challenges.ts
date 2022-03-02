@@ -262,5 +262,14 @@
 
 // 12・可串联构造器
 {
-  
+  type Chainable<
+    T extends { [k: string]: unknown } = {},
+    Optioned extends keyof T = never,
+  > = {
+    option<Key extends keyof T & string>(
+      key: Key,
+      value: T[Key],
+    ): Chainable<T, Optioned | Key>;
+    get(): { [K in Optioned]: T[K] };
+  }
 }
