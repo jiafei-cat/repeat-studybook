@@ -5,3 +5,12 @@
 // import './typeGuard' // 类型守卫
 import './typeAsserts' // 类型断言
 // import './tips' // 小技巧
+interface Obj {
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+}
+
+type test<T extends {[index: string]: any}> = T[number]
+type test2 = test<Obj>
