@@ -1,3 +1,4 @@
+// 插入排序 - 打扑克常见整理排的方式
 function insertionSort_v1(arr) {
   for(let i = 1; i < arr.length; i++) {
     let j = i
