@@ -18,7 +18,7 @@ function quickSort_v1(arr) {
   return [...quickSort_v1(left), base, ...quickSort_v1(right)]
 }
 
-function quickSort_v2 (arr, left = 0, right = arr.length) {
+function quickSort_v2 (arr, left = 0, right = arr.length-1) {
   if (left >= right) {
     return
   }
@@ -27,21 +27,21 @@ function quickSort_v2 (arr, left = 0, right = arr.length) {
   let base = arr[left]
 
   while(x < y) {
-    // 找到右边比base小的值
+    // 右指针左移
     while(x < y && arr[y] >= base) y--
-    // 交换位置
-    if(x < y) arr[x++] = arr[y]
-
-    // 找到左边比base大的值
+    // 找到比基准值小的元素，交换位置
+    if(x < y) [arr[x], arr[y]] = [arr[y], arr[x]]
+    x++
+    // 左指针右移
     while(x < y && arr[x] < base) x++
-    // 交换位置
-    if (x < y) arr[y--] = arr[x]
+    // 找到比基准值大的元素，交换位置
+    if (x < y) [arr[x], arr[y]] = [arr[y], arr[x]]
+    y--
   }
 
   arr[x] = base
   quickSort_v2(arr, left, x - 1)
   quickSort_v2(arr, x + 1, right)
-  return
 }
 
 // 左递归优化
