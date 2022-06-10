@@ -26,17 +26,22 @@ function quickSort_v2 (arr, left = 0, right = arr.length-1) {
   let y = right
   let base = arr[left]
 
+  // partition过程
   while(x < y) {
     // 右指针左移
     while(x < y && arr[y] >= base) y--
     // 找到比基准值小的元素，交换位置
-    if(x < y) [arr[x], arr[y]] = [arr[y], arr[x]]
-    x++
+    if(x < y) {
+      [arr[x], arr[y]] = [arr[y], arr[x]]
+      x++
+    }
     // 左指针右移
     while(x < y && arr[x] < base) x++
     // 找到比基准值大的元素，交换位置
-    if (x < y) [arr[x], arr[y]] = [arr[y], arr[x]]
-    y--
+    if (x < y) {
+      [arr[x], arr[y]] = [arr[y], arr[x]]
+      y--
+    }
   }
 
   arr[x] = base
