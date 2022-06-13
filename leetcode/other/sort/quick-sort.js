@@ -53,23 +53,32 @@ function quickSort_v2 (arr, left = 0, right = arr.length-1) {
 function partition(D, low, high) {
   let i
   let j
-  let s
+  let base
   while (high > low) {
     i = low
     j = high
-    s = D[low]
+    base = D[low]
+    // 通过左右指针对应的值与基准值(base)的比较交换位置
+    // 当不满足i<j的条件时，base找到正确位置的指针
     while (i < j) {
+      // 左移指针，找到比基准值小的值
       while (D[j] > s) {
         j--
       }
+      // 交换位置
       D[i] = D[j]
+      // 右移指针，找到比基准值大的值
       while (s >= D[i] && i < j) {
         i++
       }
+      // 交换位置
       D[j] = D[i]
     }
-    D[i] = s
+    // 左右指针比较移动完毕，找到当前partition的位置放置base值
+    D[i] = base
+    // 左区间递归
     partition(D, low, i - 1)
+    // 右区间范围设置, 通过while(high > low)继续partition
     low = i + 1
   }
 }
