@@ -33,6 +33,7 @@ function quickSort_v2 (arr, left = 0, right = arr.length-1) {
     // 找到比基准值小的元素，交换位置
     if(x < y) {
       [arr[x], arr[y]] = [arr[y], arr[x]]
+      // 交换了该指针就不需要再比较了，所以x++
       x++
     }
     // 左指针右移
@@ -40,6 +41,7 @@ function quickSort_v2 (arr, left = 0, right = arr.length-1) {
     // 找到比基准值大的元素，交换位置
     if (x < y) {
       [arr[x], arr[y]] = [arr[y], arr[x]]
+      // 交换了该指针就不需要再比较了，所以y--
       y--
     }
   }
