@@ -1,0 +1,1 @@
+export const FETCH_HOME_DATA = 'fetch_home_data'
