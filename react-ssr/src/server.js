@@ -14,6 +14,17 @@ app.use(express.static('dist/public'))
 app.get('*', (req, res) => {
   const store = createStoreInstance()
 
+  const promises = routesConfig?.map((route) => {
+    const component = route?.component
+
+    if (route?.path === req?.url && component?.getInitialData) {
+      return component?.getInitialData(store)
+    } else {
+      return null
+    }
+  })
+
+
   const content = ReactDOMServer.renderToString(
     <StaticRouter location={req.url}>
       <Routes />

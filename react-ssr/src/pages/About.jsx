@@ -1,4 +1,5 @@
 import React from 'react'
+import { fetchPersonalData } from '../store/actions/about'
 
 const About = () => {
   return (
@@ -6,6 +7,10 @@ const About = () => {
       About page
     </section>
   )
+}
+
+About.getInitialData = async (store) => {
+  return store.dispatch(fetchPersonalData)
 }
 
 export default About
