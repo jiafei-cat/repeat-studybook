@@ -3,6 +3,17 @@ import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import About from './pages/About'
 
+export const routesConfig = [
+  {
+    path: '/',
+    Component: Home,
+  },
+  {
+    path: '/about',
+    Component: About,
+  },
+]
+
 const RoutesList = () => {
   return (
     <div>
@@ -12,8 +23,11 @@ const RoutesList = () => {
       </ul>
 
       <Routes>
-        <Route exact path="/" element={<Home />}></Route>
-        <Route exact path="/about" element={<About />}></Route>
+        {
+          routesConfig.map(({ path, Component }) => (
+            <Route exact path={path} element={<Component />}></Route>
+          ))
+        }
       </Routes>
     </div>
   )

@@ -1,18 +1,18 @@
 import { FETCH_ABOUT_DATA } from '../consts'
 
-export const fetchPersonalData = () => {
+export const fetchPersonalData = async (dispatch) => {
   const data = await new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve({
         userInfo: {
-          username: 'garfield',
+          name: 'garfield',
           job: '前端工程师',
         },
       })
     }, 2000)
   })
 
-  dispath({
+  dispatch({
     type: FETCH_ABOUT_DATA,
     payload: data,
   })
