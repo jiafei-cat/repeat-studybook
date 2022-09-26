@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <section>
+    action
+  </section>
+  <script src="../dist/index.js"></script>
+  <script>
+    const { createStore } = redux
+
+    const initialState = {
+      number: 0
+    }
+  
+    const reducer = (state = initialState, action) => {
+      switch(action.type) {
+        case 'ADD':
+          return state = {...state, number: state.number + action.payload}
+        break
+        default:
+          return state
+      }
+    }
+    
+    const action = () => {
+      return {
+        type: 'ADD',
+        payload: 2.
+      }
+    }
+
+    const store = createStore(reducer)
+
+    console.log(store.getState())
+    console.log(store.dispatch(action()))
+    console.log(store.getState())
+    console.log(store.dispatch(action()))
+    console.log(store.getState())
+  </script>
+</body>
+</html>
