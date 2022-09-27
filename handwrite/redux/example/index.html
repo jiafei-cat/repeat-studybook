@@ -7,41 +7,122 @@
   <title>Document</title>
 </head>
 <body>
-  <section>
+  <div id="app">
     action
-  </section>
+  </div>
   <script src="../dist/index.js"></script>
   <script>
-    const { createStore } = redux
+    const { createStore, combineReducers, applyMiddleware, reduxThunk, reduxLogger } = redux
 
-    const initialState = {
+    // reducer
+    const initialStateForCounter = {
       number: 0
     }
   
-    const reducer = (state = initialState, action) => {
+    const counterReducer = (state = initialStateForCounter, action) => {
       switch(action.type) {
-        case 'ADD':
+        case 'COUNTER/ADD':
           return state = {...state, number: state.number + action.payload}
         break
         default:
           return state
       }
     }
-    
-    const action = () => {
-      return {
-        type: 'ADD',
-        payload: 2.
+
+    const initialStateForList = []
+  
+    const listReducer = (state = initialStateForList, action) => {
+      switch(action.type) {
+        case 'LIST/ADD':
+          return state.concat(action.payload)
+        break
+        default:
+          return state
       }
     }
 
-    const store = createStore(reducer)
+    const reducer = combineReducers({
+      counter: counterReducer,
+      list: listReducer,
+    })
 
-    console.log(store.getState())
-    console.log(store.dispatch(action()))
-    console.log(store.getState())
-    console.log(store.dispatch(action()))
-    console.log(store.getState())
+    // actions
+    const COUNTER_ADD = 'COUNTER/ADD'
+    const LIST_ADD = 'LIST/ADD'
+    const counterAction = () => {
+      return {
+        type: COUNTER_ADD,
+        payload: 2.
+      }
+    }
+    const listAction = () => {
+      return {
+        type: LIST_ADD,
+        payload: { title: 1, content: 'one' },
+      }
+    }
+
+    const thunkAction = (dispatch) => {
+      console.log('xxx')
+      console.log(dispatch)
+      setTimeout(() => {
+        dispatch(listAction())
+      }, 1000)
+    }
+
+    const store = createStore(reducer, applyMiddleware(reduxThunk, reduxLogger))
+    function render(content, container) {
+      container.innerHTML = content
+    }
+
+    const template = () => {
+      const { counter, list } = store.getState()
+      return `
+        <div>Number: ${counter?.number}</div>
+        <button id="incrementNumber">increment number</button>
+        <ul>
+          ${
+            list.map(item => (
+              `<li>
+                <p>${item.title}</p>
+                <p>${item.content}</p>
+              </li>`
+            )).join('')
+          }  
+        </ul>
+        <button id="incrementList">increment list</button>
+        <button id="incrementListThunk">thunk increment list</button>
+      `
+    }
+
+    const renderTemplate = () => {
+      console.log('render')
+      render(template(), document.querySelector('#app'))
+
+      document.querySelector('#incrementNumber').addEventListener('click', () => {
+        incrementNumber()
+      })
+      document.querySelector('#incrementList').addEventListener('click', () => {
+        incrementList()
+      })
+      document.querySelector('#incrementListThunk').addEventListener('click', () => {
+        incrementListByThunk()
+      })
+    }
+
+    renderTemplate()
+
+    store.subscribe(renderTemplate)
+
+    function incrementNumber() {
+      store.dispatch(counterAction())
+    }
+    function incrementList() {
+      store.dispatch(listAction())
+    }
+    function incrementListByThunk() {
+      store.dispatch(thunkAction)
+    }
   </script>
 </body>
 </html>
