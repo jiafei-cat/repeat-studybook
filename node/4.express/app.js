@@ -5,18 +5,21 @@ const db = require('./db')
 
 const app = express()
 
-// app.use(express.urlencoded()) // body parser - json
-app.use(express.json()) // body parser - json
+app.use(express.json()) // 使用body-parser处理json格式的response
 
+// 查 - 用户数据
 app.get('/', async (req, res) => {
   try {
     const dbJson = await db.getDb()
     res.send(dbJson)
   } catch (err) {
-    res.status(500).send(JSON.stringify(err))
+    res
+      .status(500)
+      .send(JSON.stringify(err))
   }
 })
 
+// 增 - 用户数据
 app.post('/', async (req, res) => {
   const bodyParams = req.body
   if (!bodyParams?.username || !bodyParams?.age) {
@@ -47,6 +50,7 @@ app.post('/', async (req, res) => {
   }
 })
 
+// 改 - 用户数据
 app.put('/:id', async (req, res) => {
   const id = Number(req.params?.id)
   if (!id) {
