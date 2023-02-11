@@ -9,3 +9,7 @@ main().then(res => {
 }).catch(error => {
   console.log(error)
 })
+
+module.exports = {
+  User: mongoose.model('User', require('./userModel'))
+}

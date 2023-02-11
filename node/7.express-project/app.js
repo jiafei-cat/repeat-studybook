@@ -6,7 +6,7 @@ const router = require('./router')
 
 const app = express()
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3001
 
 // 内置middleware的使用
 app.use(express.json()) // 解析content-type: application/json
