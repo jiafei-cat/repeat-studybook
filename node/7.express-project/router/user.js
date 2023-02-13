@@ -8,17 +8,8 @@ const router = express.Router()
 router.get('/list', userController.list)
 router.post(
   '/register',
-  ...userValidator.register,
-  (req, res, next) => {
-    const errors = validationResult(req)
-    if (!errors.isEmpty()) {
-      return res.status(401).send({
-        error: errors.array()
-      })
-    }
-    next()
-  },
-  userController.register
+  userValidator.register,
+  userController.register,
 )
 
 module.exports = router
