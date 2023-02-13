@@ -16,6 +16,10 @@ module.exports = {
           return Promise.reject('邮箱已经被注册')
         }
       }).bail(),
+    body('password')
+      .notEmpty().withMessage('密码不能为空').bail()
+      .isLength({ min: 5 }).withMessage('密码必须大于5位数').bail()
+      .matches(/\d/).withMessage('密码必须包含数字').bail(),
     body('phone')
       .isMobilePhone().withMessage('请输入正确的手机号码').bail()
       .custom(async value => {
@@ -24,5 +28,12 @@ module.exports = {
           return Promise.reject('手机号码已经被注册')
         }
       }).bail(),
+  ]),
+  login: errorBack([
+    body('email')
+      .notEmpty().withMessage('邮箱不能为空').bail()
+      .isEmail().withMessage('请输入正确的邮箱地址').bail(),
+    body('password')
+      .notEmpty().withMessage('密码不能为空').bail()
   ])
 }
