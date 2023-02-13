@@ -9,6 +9,6 @@ server.listen(8080, () => {
 })
 
 // 监听请求
-server.on('request', (req, res) => {
+server.on('request', (req, res, next) => {
   router(req, res)
 })
