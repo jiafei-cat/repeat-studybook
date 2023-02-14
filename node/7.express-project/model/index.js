@@ -1,9 +1,11 @@
 const mongoose = require('mongoose')
+const { mongoDBUrl } = require('../config')
 
 async function main () {
-  mongoose.connect('mongodb://127.0.0.1:27017/nodeTest')
+  mongoose.connect(mongoDBUrl)
 }
 
+/** 链接数据库 */
 main().then(res => {
   console.log('mongoDB connection is success!')
 }).catch(error => {
