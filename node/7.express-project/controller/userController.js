@@ -60,3 +60,11 @@ exports.update = async (req, res, next) => {
 
   res.status(202).send(updateData)
 }
+
+/**
+ * 上传用户头像
+ */
+exports.uploadAvatar = async (req, res, next) => {
+  console.log(req.file)
+  res.send('111')
+}
