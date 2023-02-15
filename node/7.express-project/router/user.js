@@ -27,4 +27,7 @@ router.get('/lists', jwt.verifyToken(), userController.list)
 router.put('/', jwt.verifyToken(), userValidator.update, userController.update)
 router.post('/avatar', jwt.verifyToken(), upload.single('avatar'), userController.uploadAvatar)
 
+router.post('/subscribe/:userId', jwt.verifyToken(), userController.subscribe)
+router.post('/unsubscribe/:userId', jwt.verifyToken(), userController.unsubscribe)
+
 module.exports = router

@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   /** 用户名 */
   username: {
     type: String,
-    required: true
+    required: true,
   },
   /** 用户密码 */
   password: {
@@ -18,17 +18,17 @@ const userSchema = new mongoose.Schema({
     /** 密码经过md5加密 */
     set: value => md5(value),
     /** 查询时不返回该字段 */
-    select: false
+    select: false,
   },
   /** 用户邮箱 */
   email: {
     type: String,
-    required: false
+    required: false,
   },
   /** 用户手机 */
   phone: {
     type: String,
-    required: false
+    required: false,
   },
   /** 用户头像 */
   avatar: {
@@ -40,12 +40,17 @@ const userSchema = new mongoose.Schema({
   /** 频道封面 */
   channelCover: {
     type: String,
-    default: null
+    default: null,
   },
   /** 频道描述 */
   channelDescription: {
     type: String,
-    default: null
+    default: null,
+  },
+  /** 订阅数量 */
+  subscribeCount: {
+    type: Number,
+    default: 0,
   },
   ...baseModel,
 })

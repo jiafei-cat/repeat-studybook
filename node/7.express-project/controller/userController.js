@@ -1,5 +1,6 @@
+const mongoose = require('mongoose')
 const { md5, jwt } = require('../utils/index')
-const { User } = require('../model')
+const { User, Subscribe } = require('../model')
 const { jwtPrivateKey } = require('../config')
 
 const commonResponse = (status, message, data = null) => ({
@@ -67,4 +68,78 @@ exports.update = async (req, res, next) => {
 exports.uploadAvatar = async (req, res, next) => {
   console.log(req.file)
   res.send({ imgUrl: req.file.path })
+}
+
+/**
+ * 用户订阅
+ */
+exports.subscribe = async (req, res, next) => {
+  const { userId } = req.params
+  const { _id } = req.userinfo
+
+  /** 校验传入的userId是否是正确的objectId */
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    res.status(402).send({ mes: '无效的频道' })
+    return
+  }
+
+  if (userId === _id) {
+    res.status(402).send({ mes: '自己无法关注自己' })
+    return
+  }
+
+  const targetSubscribe = await Subscribe.find({
+    channel: userId,
+    user: _id,
+  })
+
+  /** 没有找到用户订阅频道, 则新建一条用户订阅集合 */
+  if (!targetSubscribe || !targetSubscribe.length) {
+    const subscribeModel = new Subscribe({
+      channel: userId,
+      user: _id,
+    })
+    const targetChannel = await User.findById(userId)
+    await subscribeModel.save()
+    targetChannel.subscribeCount++ // 关注成功，用户的被关注数+1
+    await targetChannel.save()
+
+    res.send({ mes: '关注成功' })
+    return
+  }
+  
+  res.send({ mes: '您已经关注过该频道' })
+}
+
+/**
+ * 用户取消订阅
+ */
+exports.unsubscribe = async (req, res, next) => {
+  const { userId } = req.params
+  const { _id } = req.userinfo
+
+  /** 校验传入的userId是否是正确的objectId */
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    res.status(402).send({ mes: '无效的频道' })
+    return
+  }
+
+  const targetSubscribe = await Subscribe.findOne({
+    channel: userId,
+    user: _id,
+  })
+
+  if (!targetSubscribe) {
+    res.send({ mes: '您当前并没有订阅该频道' })
+    return
+  }
+
+  await targetSubscribe.remove() // 删除目标文档
+
+  const targetChannel = await User.findById(userId)
+
+  targetChannel.subscribeCount--
+  await targetChannel.save()
+
+  res.send({ mes: '取消订阅成功' })
 }
