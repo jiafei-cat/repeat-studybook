@@ -23,8 +23,8 @@ const router = express.Router()
 router.post('/registers', userValidator.register, userController.register)
 router.post('/logins', userValidator.login, userController.login)
 
-router.get('/lists', jwt.verifyToken, userController.list)
-router.put('/', jwt.verifyToken, userValidator.update, userController.update)
-router.post('/avatar', jwt.verifyToken, upload.single('avatar'), userController.uploadAvatar)
+router.get('/lists', jwt.verifyToken(), userController.list)
+router.put('/', jwt.verifyToken(), userValidator.update, userController.update)
+router.post('/avatar', jwt.verifyToken(), upload.single('avatar'), userController.uploadAvatar)
 
 module.exports = router

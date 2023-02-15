@@ -18,9 +18,15 @@ module.exports = {
   },
   /**
    * 校验json-web-token
+   * @param {*} required 是否需要校验
+   * @returns 
    */
-  verifyToken: async (req, res, next) => {
+  verifyToken: (required = true) => async (req, res, next) => {
     const { headers: { authorization } } = req
+    if (!required && !authorization) {
+      next()
+      return
+    }
 
     if (!authorization) {
       res.status('402').json({ mes: '没有权限访问该接口' })

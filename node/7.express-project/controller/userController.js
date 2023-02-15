@@ -66,5 +66,5 @@ exports.update = async (req, res, next) => {
  */
 exports.uploadAvatar = async (req, res, next) => {
   console.log(req.file)
-  res.send('111')
+  res.send({ imgUrl: req.file.path })
 }

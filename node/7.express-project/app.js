@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001
 // express内置middleware的使用
 app.use(express.json()) // 解析content-type: application/json
 app.use(express.urlencoded()) // 解析content-type: application/x-www-form-urlencoded
-
+app.use(express.static('uploads'))
 // 第三方middleware使用
 app.use(cors()) // 解决跨域
 app.use(morgan('dev')) // 日志记录
