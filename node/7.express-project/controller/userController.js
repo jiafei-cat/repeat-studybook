@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const { md5, jwt } = require('../utils/index')
 const { User, Subscribe } = require('../model')
 const { jwtPrivateKey } = require('../config')
+const lodash = require('loadsh')
 
 const commonResponse = (status, message, data = null) => ({
   code: status,
@@ -10,7 +11,7 @@ const commonResponse = (status, message, data = null) => ({
 })
 
 /**
- * 注册逻辑
+ * 注册
  */
 exports.register = async (req, res) => {
   const userParams = req.body
@@ -23,15 +24,15 @@ exports.register = async (req, res) => {
 }
 
 /**
- * 获取用户列表逻辑
+ * 获取用户列表
  */
-exports.list = async (req, res) => {
+exports.userList = async (req, res) => {
   const allUser = await User.find({})
   res.status(200).send(allUser)
 }
 
 /**
- * 登录逻辑
+ * 登录
  */
 exports.login = async (req, res) => {
   const { email, password } = req.body
@@ -142,4 +143,57 @@ exports.unsubscribe = async (req, res, next) => {
   await targetChannel.save()
 
   res.send({ mes: '取消订阅成功' })
+}
+
+/**
+ * 获取单个用户(频道)
+ */
+exports.getUser = async (req, res, next) => {
+  const { userId: channelId } = req.params
+  const _id = req?.userinfo?._id
+  /** 校验传入的channelId是否是正确的objectId */
+  if (!mongoose.Types.ObjectId.isValid(channelId)) {
+    res.status(402).send({ mes: '无效的用户或者频道' })
+    return
+  }
+
+  let isSubscribe = false
+  const targetUser = await User.findById(channelId).lean()
+
+  /** 判断当前登录的用户是否订阅过当前查询的频道 */
+  if (!!_id) {
+    const isSubscribeCurChannel = !!(await Subscribe.findOne({ user: _id, channel: channelId }))
+    isSubscribe = isSubscribeCurChannel
+  }
+
+  res.send({
+    ...lodash.pick(targetUser, ['_id', 'subscribeCount', 'username', 'channelCover', 'channelDescription']),
+    isSubscribe,
+  })
+}
+
+/**
+ * 查询该频道有哪些订阅者
+ */
+exports.getSubscribe = async (req, res, next) => {
+  const { userId } = req.params
+
+  const subscribeUserList = await Subscribe.find({ channel: userId }).lean()
+  const userIdList = subscribeUserList.map(i => i.user)
+  const userList = await User.find({ _id: userIdList })
+
+  res.send(userList)
+}
+
+/**
+ * 查询用户关注了哪些频道
+ */
+exports.getChannel = async (req, res, next) => {
+  const { userId } = req.params
+
+  const subscribeChannelList = await Subscribe.find({ user: userId })
+  const channelIdList = subscribeChannelList.map(i => i.channel)
+  const channelList = await User.find({ _id: channelIdList })
+
+  res.send(channelList)
 }
