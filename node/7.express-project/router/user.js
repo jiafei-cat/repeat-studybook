@@ -30,8 +30,8 @@ router.put('/', jwt.verifyToken(), userValidator.update, userController.update)
 router.post('/avatar', jwt.verifyToken(), upload.single('avatar'), userController.uploadAvatar)
 
 router.get('/get-user/:userId', jwt.verifyToken(false), userController.getUser)
-router.post('/subscribe/:userId', jwt.verifyToken(), userController.subscribe)
-router.post('/unsubscribe/:userId', jwt.verifyToken(), userController.unsubscribe)
+router.get('/subscribe/:userId', jwt.verifyToken(), userController.subscribe)
+router.get('/unsubscribe/:userId', jwt.verifyToken(), userController.unsubscribe)
 router.get('/get-subscribe/:userId', jwt.verifyToken(), userController.getSubscribe)
 router.get('/get-channel/:userId', jwt.verifyToken(), userController.getChannel)
 

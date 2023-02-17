@@ -19,4 +19,11 @@ module.exports = {
         }
       }).bail(),
   ]),
+  /**
+   * 视频评论
+   */
+  commentVideo: errorBack([
+    body('content')
+      .notEmpty().withMessage('视频评论不能为空').bail()
+  ])
 }

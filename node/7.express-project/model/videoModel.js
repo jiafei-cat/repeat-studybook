@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  /** 视频评论数量 */
+  commentCount: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   ...baseModel,
 })
 
