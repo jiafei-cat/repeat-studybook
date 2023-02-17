@@ -1,4 +1,4 @@
-const { Video, VideoComment } = require('../model')
+const { Video, VideoComment, VideoLike } = require('../model')
 const mongoose = require('mongoose')
 
 /** 获取所有视频 */
@@ -11,7 +11,7 @@ exports.list = async (req, res) => {
     .sort({ createTime: -1 }) // 按照创建时间倒序排序返回
     .populate('user', '_id username avatar') // 填充关联id user集合中的字段
 
-  const count = await Video.countDocuments()
+  const count = await Video.countDocuments()()
 
   res.status(200).json({ videoList, count })
 }
@@ -48,25 +48,11 @@ exports.commentVideo = async (req, res) => {
   const { videoId } = req.params
   const { content } = req.body
 
-  if (!mongoose.isValidObjectId(videoId)) {
-    res.status(402).send({
-      mes: '请输入正确的视频id'
-    })
-    return
-  }
-
-  const isExistsVideo = await Video.findById(videoId)
-
-  if (!isExistsVideo) {
-    res.status(402).send({
-      mes: '该视频不存在'
-    })
-    return
-  }
-
   const saveCommentResult = new VideoComment({ user: _id, video: videoId, content }).save()
-  isExistsVideo.commentCount++
-  isExistsVideo.save()
+  const targetVideo = await Video.findById(videoId)
+
+  targetVideo.commentCount++
+  targetVideo.save()
 
   res.send({ msg: '评论成功' })
 }
@@ -75,13 +61,6 @@ exports.commentVideo = async (req, res) => {
 exports.videoCommentList = async (req, res, next) => {
   const { videoId } = req.params
   const { pageNum = 1, pageSize = 10 } = req.body
-
-  if (!mongoose.isValidObjectId(videoId)) {
-    res.status(402).send({
-      mes: '请输入正确的视频id'
-    })
-    return
-  }
 
   const commentList = await VideoComment.find({ video: videoId })
     .skip((pageNum - 1) * pageSize)
@@ -99,30 +78,8 @@ exports.videoCommentList = async (req, res, next) => {
 exports.deleteVideoComment = async (req, res) => {
   const { videoId, commentId } = req.params
   const { _id } = req.userinfo
-  if (!mongoose.isValidObjectId(videoId) || !mongoose.isValidObjectId(commentId)) {
-    res.status(402).send({
-      mes: '请输入正确的视频或评论id'
-    })
-    return
-  }
-
-  const isExistsVideo = await Video.findById(videoId)
-
-  if (!isExistsVideo) {
-    res.status(404).send({
-      mes: '该视频不存在'
-    })
-    return
-  }
 
   const targetComment = await VideoComment.findOne({ _id: commentId, video: videoId })
-
-  if (!targetComment) {
-    res.status(404).send({
-      mes: '该评论不存在'
-    })
-    return
-  }
 
   if (_id !== targetComment.user.toString()) {
     res.status(403).send({
@@ -130,9 +87,77 @@ exports.deleteVideoComment = async (req, res) => {
     })
     return
   }
+  const targetVideo = await Video.findById(videoId)
 
   await targetComment.remove()
-  isExistsVideo.commentCount--
-  await isExistsVideo.save()
+  targetVideo.commentCount--
+  await targetVideo.save()
   res.send({ mes: '删除成功' })
+}
+
+/** 合并喜欢不喜欢视频逻辑 */
+const toggleLikeVideoLogic =  (likeType = 1) => {
+  return async(req, res) => {
+    const { videoId } = req.params
+    const { _id } = req.userinfo
+    const likeMessage = {
+      '-1': '不喜欢',
+      '1': '喜欢'
+    }
+
+    const isExistedLike = await VideoLike.findOne({ user: _id, video: videoId })
+
+    if (!isExistedLike) {
+      const newVideoLike = new VideoLike({
+        user: _id,
+        video: videoId,
+        type: likeType,
+      }).save()
+  
+      res.send({ msg: `${likeMessage[likeType]}该视频成功` })
+      return
+    }
+  
+    if (isExistedLike.type === likeType) {
+      await isExistedLike.remove()
+      res.send({ msg: `已经取消该${likeMessage[likeType]}` })
+      return
+    }
+  
+    if (isExistedLike.type !== likeType) {
+      isExistedLike.type = likeType
+      await isExistedLike.save()
+      res.send({ msg: `${likeMessage[likeType]}该视频成功` })
+      return
+    }
+  
+    res.send(404).send({
+      msg: '404 not find'
+    })
+  }
+}
+/** 喜欢视频 */
+exports.like = toggleLikeVideoLogic(1)
+
+/** 不喜欢视频 */
+exports.dislike = toggleLikeVideoLogic(-1)
+
+/** 用户喜欢的视频列表 */
+exports.likeList = async (req, res) => {
+  const { _id } = req.userinfo
+  const { pageNum = 1, pageSize = 10 } = req.body
+
+  const videoLikeList = await VideoLike.find({ user: _id, type: 1 })
+    .skip((pageNum - 1) * pageSize)
+    .limit(pageSize)
+    .sort({ createTime: -1 })
+
+  const count = await VideoLike.countDocuments({
+    type: 1,
+  })
+
+  res.send({
+    list: videoLikeList,
+    count,
+  })
 }

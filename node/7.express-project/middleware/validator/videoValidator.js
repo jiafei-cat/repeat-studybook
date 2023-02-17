@@ -1,6 +1,7 @@
-const { body } = require('express-validator')
+const mongoose = require('mongoose')
+const { body, param } = require('express-validator')
 const errorBack = require('./errorBack')
-const { Video } = require('../../model')
+const { Video, VideoComment } = require('../../model')
 
 module.exports = {
   /**
@@ -25,5 +26,39 @@ module.exports = {
   commentVideo: errorBack([
     body('content')
       .notEmpty().withMessage('视频评论不能为空').bail()
-  ])
+  ]),
+  /**
+   * 验证视频是否存在
+   */
+  verifyVideoExists: errorBack([
+    param('videoId')
+      .custom(async value => {
+        if (!mongoose.isValidObjectId(value)) {
+          return Promise.reject('请输入正确的视频id')
+        }
+        const isExisted = await Video.findById(value)
+
+        if (!isExisted) {
+          return Promise.reject('视频不存在')
+        }
+
+      }).bail(),
+  ]),
+  /**
+   * 验证评论是否存在
+   */
+  verifyCommentExists: errorBack([
+    param('commentId')
+      .custom(async value => {
+        if (!mongoose.isValidObjectId(value)) {
+          return Promise.reject('请输入正确的评论id')
+        }
+        const isExisted = await VideoComment.findById(value)
+
+        if (!isExisted) {
+          return Promise.reject('评论不存在')
+        }
+
+      }).bail(),
+  ]),
 }
