@@ -7,7 +7,7 @@ const lodash = require('loadsh')
 const commonResponse = (status, message, data = null) => ({
   code: status,
   mes: message,
-  data
+  data,
 })
 
 /**
@@ -18,19 +18,12 @@ exports.register = async (req, res) => {
 
   const userModel = new User(req.body)
   const dbResult = await userModel.save()
-  res.status(200).json(commonResponse(0, 'success', {
-    userId: dbResult._id
-  }))
+  res.status(200).json(
+    commonResponse(0, 'success', {
+      userId: dbResult._id,
+    })
+  )
 }
-
-/**
- * 获取用户列表
- */
-exports.userList = async (req, res) => {
-  const allUser = await User.find({})
-  res.status(200).send(allUser)
-}
-
 /**
  * 登录
  */
@@ -45,20 +38,37 @@ exports.login = async (req, res) => {
   /** 登录成功生成token返回客户端 */
   const token = await jwt.createToken(targetUser.toJSON())
 
-  res.status(200).json(commonResponse(0, '登录成功', {
-    userId: targetUser._id,
-    token,
-  }))
+  res.status(200).json(
+    commonResponse(0, '登录成功', {
+      userId: targetUser._id,
+      token,
+    })
+  )
+}
+
+/**
+ * 获取用户列表
+ */
+exports.userList = async (req, res) => {
+  const allUser = await User.find({})
+  res.status(200).send(allUser)
 }
 
 /**
  * 更新用户数据
  */
 exports.update = async (req, res, next) => {
-  const updateData = await User.findByIdAndUpdate(req.userinfo._id, req.body, {
-    /** 返回更新后的query */
-    new: true
-  }).lean()
+  const updateData = await User.findByIdAndUpdate(
+    req.userinfo._id,
+    {
+      ...req.body,
+      updateTime: new Date(),
+    },
+    {
+      /** 返回更新后的query */
+      new: true,
+    }
+  ).lean()
 
   res.status(202).send(updateData)
 }
@@ -89,18 +99,24 @@ exports.subscribe = async (req, res, next) => {
     return
   }
 
+  const targetChannel = await User.findById(userId)
+
   const targetSubscribe = await Subscribe.find({
     channel: userId,
     user: _id,
   })
 
+  if (!targetChannel) {
+    res.send({ mes: '该频道不存在' })
+    return
+  }
+
   /** 没有找到用户订阅频道, 则新建一条用户订阅集合 */
-  if (!targetSubscribe || !targetSubscribe.length) {
+  if (!targetSubscribe?.length) {
     const subscribeModel = new Subscribe({
       channel: userId,
       user: _id,
     })
-    const targetChannel = await User.findById(userId)
     await subscribeModel.save()
     targetChannel.subscribeCount++ // 关注成功，用户的被关注数+1
     await targetChannel.save()
@@ -108,7 +124,7 @@ exports.subscribe = async (req, res, next) => {
     res.send({ mes: '关注成功' })
     return
   }
-  
+
   res.send({ mes: '您已经关注过该频道' })
 }
 
@@ -162,7 +178,10 @@ exports.getUser = async (req, res, next) => {
 
   /** 判断当前登录的用户是否订阅过当前查询的频道 */
   if (!!_id) {
-    const isSubscribeCurChannel = !!(await Subscribe.findOne({ user: _id, channel: channelId }))
+    const isSubscribeCurChannel = !!(await Subscribe.findOne({
+      user: _id,
+      channel: channelId,
+    }))
     isSubscribe = isSubscribeCurChannel
   }
 
@@ -179,7 +198,7 @@ exports.getSubscribe = async (req, res, next) => {
   const { userId } = req.params
 
   const subscribeUserList = await Subscribe.find({ channel: userId }).lean()
-  const userIdList = subscribeUserList.map(i => i.user)
+  const userIdList = subscribeUserList.map((i) => i.user)
   const userList = await User.find({ _id: userIdList })
 
   res.send(userList)
@@ -192,7 +211,7 @@ exports.getChannel = async (req, res, next) => {
   const { userId } = req.params
 
   const subscribeChannelList = await Subscribe.find({ user: userId })
-  const channelIdList = subscribeChannelList.map(i => i.channel)
+  const channelIdList = subscribeChannelList.map((i) => i.channel)
   const channelList = await User.find({ _id: channelIdList })
 
   res.send(channelList)

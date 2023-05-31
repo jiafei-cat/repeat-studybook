@@ -11,7 +11,7 @@ exports.list = async (req, res) => {
     .sort({ createTime: -1 }) // 按照创建时间倒序排序返回
     .populate('user', '_id username avatar') // 填充关联id user集合中的字段
 
-  const count = await Video.countDocuments()()
+  const count = await Video.countDocuments()
 
   res.status(200).json({ videoList, count })
 }
@@ -24,7 +24,7 @@ exports.createVideo = async (req, res) => {
   const dbResult = await videoModel.save()
 
   res.status(200).json({
-    videoId: dbResult._id
+    videoId: dbResult._id,
   })
 }
 
@@ -83,7 +83,7 @@ exports.deleteVideoComment = async (req, res) => {
 
   if (_id !== targetComment.user.toString()) {
     res.status(403).send({
-      mes: '您没有权限删除该评论'
+      mes: '您没有权限删除该评论',
     })
     return
   }
@@ -96,13 +96,13 @@ exports.deleteVideoComment = async (req, res) => {
 }
 
 /** 合并喜欢不喜欢视频逻辑 */
-const toggleLikeVideoLogic =  (likeType = 1) => {
-  return async(req, res) => {
+const toggleLikeVideoLogic = (likeType = 1) => {
+  return async (req, res) => {
     const { videoId } = req.params
     const { _id } = req.userinfo
     const likeMessage = {
       '-1': '不喜欢',
-      '1': '喜欢'
+      1: '喜欢',
     }
 
     const isExistedLike = await VideoLike.findOne({ user: _id, video: videoId })
@@ -113,26 +113,26 @@ const toggleLikeVideoLogic =  (likeType = 1) => {
         video: videoId,
         type: likeType,
       }).save()
-  
+
       res.send({ msg: `${likeMessage[likeType]}该视频成功` })
       return
     }
-  
+
     if (isExistedLike.type === likeType) {
       await isExistedLike.remove()
       res.send({ msg: `已经取消该${likeMessage[likeType]}` })
       return
     }
-  
+
     if (isExistedLike.type !== likeType) {
       isExistedLike.type = likeType
       await isExistedLike.save()
       res.send({ msg: `${likeMessage[likeType]}该视频成功` })
       return
     }
-  
+
     res.send(404).send({
-      msg: '404 not find'
+      msg: '404 not find',
     })
   }
 }
