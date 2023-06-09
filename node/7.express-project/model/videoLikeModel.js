@@ -6,13 +6,13 @@ module.exports = new mongoose.Schema({
   user: {
     type: mongoose.ObjectId,
     required: true,
-    ref: 'user',
+    ref: 'User',
   },
   /** 关联的视频 */
   video: {
     type: mongoose.ObjectId,
     required: true,
-    ref: 'video',
+    ref: 'Video',
   },
   /**
    * 是否喜欢

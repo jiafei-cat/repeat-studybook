@@ -77,7 +77,6 @@ exports.update = async (req, res, next) => {
  * 上传用户头像
  */
 exports.uploadAvatar = async (req, res, next) => {
-  console.log(req.file)
   res.send({ imgUrl: req.file.path })
 }
 

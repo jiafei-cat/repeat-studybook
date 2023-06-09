@@ -3,7 +3,7 @@ const { redisConfig } = require('../../config')
 
 const redis = new Redis(redisConfig.port, redisConfig.path, redisConfig.options)
 
-redis.on('error', err => {
+redis.on('error', (err) => {
   if (err) {
     console.log('redis connection failed')
     console.log(err)
@@ -11,6 +11,8 @@ redis.on('error', err => {
   }
 })
 
-redis.on('ready', () => {
+redis.on('ready', async () => {
   console.log('redis connection succeeded')
 })
+
+module.exports = redis

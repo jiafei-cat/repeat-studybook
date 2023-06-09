@@ -1,4 +1,5 @@
-const { Video, VideoComment, VideoLike } = require('../model')
+const { Video, VideoComment, VideoLike, Collect } = require('../model')
+const { setHotVideoScore, getHotVideos } = require('../model/redis/hotVideo')
 const mongoose = require('mongoose')
 
 /** 获取所有视频 */
@@ -51,6 +52,7 @@ exports.commentVideo = async (req, res) => {
   const saveCommentResult = new VideoComment({ user: _id, video: videoId, content }).save()
   const targetVideo = await Video.findById(videoId)
 
+  await setHotVideoScore(5, videoId)
   targetVideo.commentCount++
   targetVideo.save()
 
@@ -88,6 +90,7 @@ exports.deleteVideoComment = async (req, res) => {
     return
   }
   const targetVideo = await Video.findById(videoId)
+  await setHotVideoScore(-5, videoId)
 
   await targetComment.remove()
   targetVideo.commentCount--
@@ -114,12 +117,14 @@ const toggleLikeVideoLogic = (likeType = 1) => {
         type: likeType,
       }).save()
 
+      await setHotVideoScore(likeType === 1 ? 3 : -3, videoId)
       res.send({ msg: `${likeMessage[likeType]}该视频成功` })
       return
     }
 
     if (isExistedLike.type === likeType) {
       await isExistedLike.remove()
+      await setHotVideoScore(likeType === 1 ? 3 : -3, videoId)
       res.send({ msg: `已经取消该${likeMessage[likeType]}` })
       return
     }
@@ -127,6 +132,7 @@ const toggleLikeVideoLogic = (likeType = 1) => {
     if (isExistedLike.type !== likeType) {
       isExistedLike.type = likeType
       await isExistedLike.save()
+      await setHotVideoScore(likeType === 1 ? 3 : -3, videoId)
       res.send({ msg: `${likeMessage[likeType]}该视频成功` })
       return
     }
@@ -160,4 +166,53 @@ exports.likeList = async (req, res) => {
     list: videoLikeList,
     count,
   })
+}
+
+/** 视频收藏/取消收藏 */
+exports.collectVideo = async (req, res) => {
+  const { _id } = req.userinfo
+  const { videoId } = req.params
+  const isCollected = await Collect.findOne({ video: videoId, user: _id })
+  if (!isCollected) {
+    const newCollect = new Collect({ video: videoId, user: _id })
+    await newCollect.save()
+    await setHotVideoScore(5, videoId)
+    res.send({ msg: `收藏该视频成功` })
+    return
+  }
+  await isCollected.remove()
+  await setHotVideoScore(-5, videoId)
+  res.send({ msg: `您已成功取消该视频收藏` })
+}
+
+/** 用户收藏的视频列表 */
+exports.collectList = async (req, res) => {
+  const { _id } = req.userinfo
+  const { pageNum = 1, pageSize = 10 } = req.body
+
+  const videoCollectList = await Collect.find({ user: _id, type: 1 }, 'video')
+    .skip((pageNum - 1) * pageSize)
+    .limit(pageSize)
+    .sort({ createTime: -1 })
+    .populate('video', 'title description videoCover commentCount')
+
+  const count = await Collect.countDocuments({
+    type: 1,
+  })
+
+  res.send({
+    list: videoCollectList,
+    count,
+  })
+}
+
+/** 获取热门视频 */
+exports.getHotVideoList = async (req, res) => {
+  const { pageNum = 1, pageSize = 10 } = req.body
+  const hotVideos = await getHotVideos((pageNum - 1) * pageSize, pageSize * pageNum - 1)
+
+  const idArray = hotVideos.map((item) => item.videoId).filter((item) => mongoose.isValidObjectId(item))
+  const hotVideosList = await Video.find({ _id: { $in: idArray } }).populate('user', '_id username')
+
+  res.send({ list: hotVideosList })
 }
