@@ -1,9 +1,12 @@
 import { ViteDevServer } from 'vite'
 import { AddressInfo } from 'net'
 
-export const devPlugin = () => {
+/**
+ * 该插件负责启动vite服务时启动electron服务
+ */
+export default () => {
   return {
-    name: 'dev-plugin',
+    name: 'vite-electron-dev-plugin',
     /** configureServer钩子: 当 Vite 启动 Http 服务的时候，configureServer钩子会被执行 */
     configureServer: (server: ViteDevServer) => {
       /** 通过esbuild 转译 mainEntry.ts */
@@ -21,7 +24,7 @@ export const devPlugin = () => {
 
         /** 获取当前vite启动的服务地址 */
         const addressInfo = server.httpServer?.address() as AddressInfo
-        console.log(addressInfo)
+
         const httpAddress = `http://localhost:${addressInfo.port}`
 
         /** 通过vite子进程启动 electron (指定编译好的mainEntry.js和要加载的vite服务地址) */

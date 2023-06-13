@@ -1,5 +1,8 @@
 import { app, BrowserWindow } from 'electron'
+import CustomScheme from './CustomScheme'
 
+/** 因为关闭了安全策略，会报安全警告，这里先关闭 */
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 /** 设置为全局变量: 避免主窗口被 JavaScript 的垃圾回收器回收掉 */
 let mainWindow: BrowserWindow
 
@@ -24,6 +27,12 @@ app.whenReady().then(() => {
   }
   mainWindow = new BrowserWindow(config)
   /** 打开浏览器的开发工具 */
-  mainWindow.webContents.openDevTools({ mode: 'right' })
-  mainWindow.loadURL(process.argv[2])
+
+  if (process.argv[2]) {
+    mainWindow.webContents.openDevTools({ mode: 'right' })
+    mainWindow.loadURL(process.argv[2])
+  } else {
+    CustomScheme.registerScheme()
+    mainWindow.loadURL(`electron-app://index.html`)
+  }
 })
