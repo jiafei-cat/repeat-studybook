@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { createBrowser } from '../common/browser'
+import { createChildWindow } from '../common/browser'
 
 /** 左侧菜单控制项 */
 const mainWindowRoutes = ref([
@@ -64,18 +64,7 @@ watch(
 
 const openSettingWindow = async () => {
   const config = { show: true, modal: true, width: 800, webPreferences: { webviewTag: false } }
-
-  const browser = await createBrowser(`/windowSetting/accountSetting`, config)
-
-  window.addEventListener('message', (e) => {
-    console.log('Receive message from postMessage')
-    console.log(e.data)
-  })
-
-  /** 给子窗口传递数据 */
-  browser.postMessage({ type: 'test', value: 'msg from your parent' })
-  /** 给父窗传递数据 */
-  browser.parent.postMessage({ type: 'test', value: 'msg from your parent' })
+  await createChildWindow(`/windowSetting/accountSetting`, config)
 }
 </script>
 
