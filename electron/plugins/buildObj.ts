@@ -86,6 +86,11 @@ export default class BuildObj {
             url: 'http://localhost:5500/',
           },
         ],
+        /**
+         * 额外的资源打包
+         * https://www.electron.build/configuration/contents.html#extraresources
+         */
+        extraResources: [{ from: `./src/common/db.db`, to: `./` }],
       },
       project: process.cwd(),
     }
