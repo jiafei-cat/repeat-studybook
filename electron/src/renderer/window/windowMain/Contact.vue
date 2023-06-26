@@ -51,6 +51,7 @@
         <div class="transaction">
           <span>事务: </span>
           <button @click="transaction">使用事务插入一条message</button>
+          <button @click="queryTest">关联数据查询</button>
         </div>
       </div>
       <TransitionGroup name="list" tag="table" border v-if="allData?.length">
@@ -230,6 +231,15 @@ const transaction = async () => {
     console.error(error)
   }
   await queryData()
+}
+
+const queryTest = async () => {
+  /**
+   * leftJoin保证左边(Message)即使没有匹配到关联行也会返回
+   * 如果是一对多的关系则会返回多条关联数据
+   */
+  const res = await db('Message').leftJoin('Chat', 'Message.chatId', 'Chat.id').select('*')
+  console.log(res)
 }
 </script>
 
