@@ -20,6 +20,8 @@ exports.getHotVideos = async (start = 0, stop = -1) => {
   const hotVideos = await redis.zrevrange(REDIS_HOT_VIDEO_KEY, start, stop, 'withscores')
 
   let cacheItem = {}
+
+  /** 查询出来的数据 第一个值id，第二个值是分, 这里需要遍历拼接下 */
   const hotVideosList = hotVideos.reduce((pre, cur, index) => {
     if (index % 2 === 0) {
       cacheItem = {}

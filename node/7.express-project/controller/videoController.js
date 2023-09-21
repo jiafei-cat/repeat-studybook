@@ -32,14 +32,13 @@ exports.createVideo = async (req, res) => {
 /** 视频详情 */
 exports.videoDetail = async (req, res) => {
   const { id: vodVideoId } = req.params
-  const targetVideo = await Video.find({ vodVideoId }).populate('user', '_id username cover')
+  const targetVideo = await Video.findById(vodVideoId).populate('user', '_id username cover')
 
   const { userinfo } = req
-  // 是否是登录状态下获取视频详情
+  // 登录状态下多返回信息
   if (userinfo) {
     // todo
   }
-
   res.send(targetVideo)
 }
 
@@ -109,7 +108,10 @@ const toggleLikeVideoLogic = (likeType = 1) => {
     }
 
     const isExistedLike = await VideoLike.findOne({ user: _id, video: videoId })
+    /** 热度分数 */
+    const hotScore = likeType === 1 ? 3 : -3
 
+    /** 创建一条视频与用户的关联记录 */
     if (!isExistedLike) {
       const newVideoLike = new VideoLike({
         user: _id,
@@ -117,14 +119,14 @@ const toggleLikeVideoLogic = (likeType = 1) => {
         type: likeType,
       }).save()
 
-      await setHotVideoScore(likeType === 1 ? 3 : -3, videoId)
+      await setHotVideoScore(hotScore, videoId)
       res.send({ msg: `${likeMessage[likeType]}该视频成功` })
       return
     }
 
     if (isExistedLike.type === likeType) {
       await isExistedLike.remove()
-      await setHotVideoScore(likeType === 1 ? 3 : -3, videoId)
+      await setHotVideoScore(hotScore, videoId)
       res.send({ msg: `已经取消该${likeMessage[likeType]}` })
       return
     }
@@ -132,7 +134,7 @@ const toggleLikeVideoLogic = (likeType = 1) => {
     if (isExistedLike.type !== likeType) {
       isExistedLike.type = likeType
       await isExistedLike.save()
-      await setHotVideoScore(likeType === 1 ? 3 : -3, videoId)
+      await setHotVideoScore(hotScore, videoId)
       res.send({ msg: `${likeMessage[likeType]}该视频成功` })
       return
     }
@@ -212,7 +214,12 @@ exports.getHotVideoList = async (req, res) => {
   const hotVideos = await getHotVideos((pageNum - 1) * pageSize, pageSize * pageNum - 1)
 
   const idArray = hotVideos.map((item) => item.videoId).filter((item) => mongoose.isValidObjectId(item))
-  const hotVideosList = await Video.find({ _id: { $in: idArray } }).populate('user', '_id username')
+  const hotVideosList = await Video.find({ _id: { $in: idArray } })
+    .populate('user', '_id username')
+    .lean()
 
+  hotVideosList.forEach(
+    (item) => (item.hotScore = hotVideos.find((cItem) => cItem.videoId === String(item._id))?.score || 0)
+  )
   res.send({ list: hotVideosList })
 }
