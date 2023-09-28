@@ -7,9 +7,7 @@ const router = new Router()
 
 /** koa中间件列表: https://github.com/koajs/koa/wiki */
 
-/** koa的中间件 */
-
-/** koa/router 中间件 */
+/** 路由中间件: koa/router */
 router.post('/userinfo/:id?', (ctx) => {
   console.log('请求content-type', ctx.request.type)
   /** 获取请求参数 */
@@ -24,10 +22,33 @@ router.post('/userinfo/:id?', (ctx) => {
   ctx.body = { username: 'test', userId: ctx.params.id }
 })
 
+/** koa 中的错误处理 */
+/** ctx.throw 由http-errors处理，会根据4xx/5xx错误创建不同错误 */
+router.get('/error/:code?', (ctx) => {
+  if (ctx.params.code === '4') {
+    /** 4xx客户端错误, 客户端接收错误信息 */
+    ctx.throw(400, 'error')
+    return
+  }
+
+  if (ctx.params.code === '5') {
+    /** 5xx服务端错误，服务端输出错误信息 */
+    ctx.throw(500, 'error')
+    return
+  }
+
+  /** 触发代码执行错误，被on error监听到 */
+  ctx.body = ctx.params.code.code
+})
+
+/** 使用事件监听错误 (内部使用的是 node Emitter 事件模块) */
+app.on('error', (error, ctx) => {
+  console.log(error)
+})
+
+/** body parse 中间件 koa/body */
 app.use(koaBody())
 app.use(router.routes())
-
-/** koa/body 解析body的中间件 */
 
 /** kao中处理上下文 */
 /** koa会将http模块的request和response整合，全部放在koa自己的ctx中，方便使用 */
@@ -39,7 +60,8 @@ app.use((ctx, next) => {
   next()
 })
 
-/** koa的中间件机制, use会推入middleware中，最后通过compose组装执行中间件 */
+/** koa的中间件执行机制 */
+/** use会推入middleware中，最后通过compose组装执行中间件 */
 /** next相当于下一个函数 (next() => dispatch(index) => Promise.resolve执行) */
 /** 输出结果: one-1 => two-1 => one-2 => three-1 => tow-2 => three-2 */
 /** 输出解释:
