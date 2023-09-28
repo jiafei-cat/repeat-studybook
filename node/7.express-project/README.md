@@ -8,7 +8,7 @@
 - 业务逻辑模块化
 
 中间件:
-- response body解析 body-parser: https://github.com/expressjs/body-parser#readme
+- request body解析 body-parser: https://github.com/expressjs/body-parser#readme
 - 跨域解决 cors: https://github.com/expressjs/cors#readme
 - 日志记录 morgan: https://github.com/expressjs/morgan#readme
 - 数据校验 express-validator: https://express-validator.github.io/docs
