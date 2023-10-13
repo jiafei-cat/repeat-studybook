@@ -61,9 +61,9 @@ module.exports = {
   },
 
   async avatar(ctx, next) {
-    console.log(ctx)
-    // if (!req.curryFileName) {
-    //   res.status(400).json({ errors: '请上传正确的头像文件' })
-    // }
+    if (!ctx.file) {
+      ctx.throw(400, '请上传正确的头像文件')
+    }
+    await next()
   },
 }

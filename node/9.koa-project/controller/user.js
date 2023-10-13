@@ -1,14 +1,8 @@
 const mongoose = require('mongoose')
-const { md5, jwt } = require('../utils/index')
+const { md5, jwt, commonResponse } = require('../utils/index')
 const { User, Subscribe } = require('../model')
 const { jwtPrivateKey } = require('../config')
 const lodash = require('loadsh')
-
-const commonResponse = (status, message, data = null) => ({
-  code: status,
-  mes: message,
-  data,
-})
 
 /**
  * 注册
@@ -48,7 +42,7 @@ exports.login = async (ctx) => {
  */
 exports.userList = async (ctx) => {
   const allUser = await User.find({}).select('-createTime -updateTime')
-  ctx.body = allUser
+  ctx.body = commonResponse(0, '', allUser)
 }
 
 /**
@@ -67,31 +61,31 @@ exports.update = async (ctx, next) => {
     }
   ).lean()
 
-  ctx.body = updateData
+  ctx.body = commonResponse(0, '', updateData)
 }
 
 /**
  * 上传用户头像
  */
 exports.uploadAvatar = async (ctx, next) => {
-  ctx.body = { imgUrl: ctx.file.path }
+  ctx.body = commonResponse(0, '', { imgUrl: ctx.file.path })
 }
 
 /**
  * 用户订阅
  */
-exports.subscribe = async (req, res, next) => {
-  const { userId } = req.params
-  const { _id } = req.userinfo
+exports.subscribe = async (ctx, next) => {
+  const { userId } = ctx.params
+  const { _id } = ctx.userinfo
 
   /** 校验传入的userId是否是正确的objectId */
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    res.status(402).send({ mes: '无效的频道' })
+    ctx.throw(400, '无效的频道')
     return
   }
 
   if (userId === _id) {
-    res.status(402).send({ mes: '自己无法关注自己' })
+    ctx.throw(400, '自己无法关注自己')
     return
   }
 
@@ -103,7 +97,7 @@ exports.subscribe = async (req, res, next) => {
   })
 
   if (!targetChannel) {
-    res.send({ mes: '该频道不存在' })
+    ctx.throw(400, '该频道不存在')
     return
   }
 
@@ -117,60 +111,57 @@ exports.subscribe = async (req, res, next) => {
     targetChannel.subscribeCount++ // 关注成功，用户的被关注数+1
     await targetChannel.save()
 
-    res.send({ mes: '关注成功' })
+    ctx.body = commonResponse(0, '关注成功')
     return
   }
-
-  res.send({ mes: '您已经关注过该频道' })
+  ctx.body = commonResponse(0, '您已经关注过该频道')
 }
 
 /**
  * 用户取消订阅
  */
-exports.unsubscribe = async (req, res, next) => {
-  const { userId } = req.params
-  const { _id } = req.userinfo
+exports.unsubscribe = async (ctx, next) => {
+  const { userId } = ctx.params
+  const { _id } = ctx.userinfo
 
   /** 校验传入的userId是否是正确的objectId */
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    res.status(402).send({ mes: '无效的频道' })
+    ctx.throw(400, '无效的频道')
     return
   }
 
-  const targetSubscribe = await Subscribe.findOne({
+  const targetSubscribe = await Subscribe.findOneAndDelete({
     channel: userId,
     user: _id,
   })
 
   if (!targetSubscribe) {
-    res.send({ mes: '您当前并没有订阅该频道' })
+    ctx.throw(400, '您当前并没有订阅该频道')
     return
   }
-
-  await targetSubscribe.remove() // 删除目标文档
 
   const targetChannel = await User.findById(userId)
 
   targetChannel.subscribeCount--
   await targetChannel.save()
 
-  res.send({ mes: '取消订阅成功' })
+  ctx.body = commonResponse(0, '取消订阅成功')
 }
 
 /**
  * 获取单个用户(频道)
  */
-exports.getUser = async (req, res, next) => {
-  const { userId: channelId } = req.params
-  const _id = req?.userinfo?._id
+exports.getUser = async (ctx, next) => {
+  const { userId: channelId } = ctx.params
+  const _id = ctx?.userinfo?._id
   /** 校验传入的channelId是否是正确的objectId */
   if (!mongoose.Types.ObjectId.isValid(channelId)) {
-    res.status(402).send({ mes: '无效的用户或者频道' })
+    ctx.throw(400, '无效的用户或者频道')
     return
   }
 
   let isSubscribe = false
-  const targetUser = await User.findById(channelId).lean()
+  const targetUser = await User.findById(channelId).select('-createTime -updateTime').lean()
 
   /** 判断当前登录的用户是否订阅过当前查询的频道 */
   if (!!_id) {
@@ -181,8 +172,8 @@ exports.getUser = async (req, res, next) => {
     isSubscribe = isSubscribeCurChannel
   }
 
-  res.send({
-    ...lodash.pick(targetUser, ['_id', 'subscribeCount', 'username', 'channelCover', 'channelDescription']),
+  ctx.body = commonResponse(0, '', {
+    ...targetUser,
     isSubscribe,
   })
 }
@@ -190,25 +181,25 @@ exports.getUser = async (req, res, next) => {
 /**
  * 查询该频道有哪些订阅者
  */
-exports.getSubscribe = async (req, res, next) => {
-  const { userId } = req.params
+exports.getSubscribe = async (ctx, next) => {
+  const { userId } = ctx.params
 
   const subscribeUserList = await Subscribe.find({ channel: userId }).lean()
   const userIdList = subscribeUserList.map((i) => i.user)
-  const userList = await User.find({ _id: userIdList })
+  const userList = await User.find({ _id: userIdList }).select('-createTime -updateTime')
 
-  res.send(userList)
+  ctx.body = commonResponse(0, '', userList)
 }
 
 /**
  * 查询用户关注了哪些频道
  */
-exports.getChannel = async (req, res, next) => {
-  const { userId } = req.params
+exports.getChannel = async (ctx, next) => {
+  const { userId } = ctx.params
 
   const subscribeChannelList = await Subscribe.find({ user: userId })
   const channelIdList = subscribeChannelList.map((i) => i.channel)
-  const channelList = await User.find({ _id: channelIdList })
+  const channelList = await User.find({ _id: channelIdList }).select('-createTime -updateTime')
 
-  res.send(channelList)
+  ctx.body = commonResponse(0, '', channelList)
 }

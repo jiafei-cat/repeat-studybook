@@ -4,7 +4,7 @@ const { jwtPrivateKey } = require('../config')
 
 const sign = util.promisify(jwt.sign) // 默认为HMAC SHA256加密
 const verify = util.promisify(jwt.verify)
-let pre = null
+
 module.exports = {
   /**
    * 创建json-web-token
