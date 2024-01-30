@@ -1,0 +1,8 @@
+{
+  "extends": "eslint-config-egg",
+  "root": true,
+  "rules": {
+    "semi": "off",
+    "arrow-parens": "off"
+  }
+}

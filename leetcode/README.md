@@ -1,4 +1,4 @@
-# leetcode 练习
+# leetcode练习
 ---
 ## 2022.02.14 ~ 2022.02.15
 [Leetcode - 318. 最大单词长度乘积](https://leetcode-cn.com/problems/maximum-product-of-word-lengths/)
@@ -507,4 +507,4 @@
 - 🏷️[github](https://github.com/qetuozm/repeat-studybook/blob/main/leetcode/%5BLeetcode%5D%2092.%E5%8F%8D%E8%BD%AC%E9%93%BE%E8%A1%A82.js) - 💬[掘金](https://juejin.cn/post/7043404858438713352) - 📺[B站](https://www.bilibili.com/video/BV18b4y1B7LD/)
 ---
 
-**[🚀 - 回到顶部 ⬆ Back to top](#readme)**
+**[🚀 - 回到顶部 ⬆ Back to top](#leetcode练习)**
